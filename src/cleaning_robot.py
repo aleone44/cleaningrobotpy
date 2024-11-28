@@ -68,6 +68,8 @@ class CleaningRobot:
         self.pos_x = 0
         self.pos_y = 0
         self.heading = self.N
+        if self.robot_status() != "(0,0,N)":
+            raise CleaningRobotError("error in initialize robot")
 
 
     def robot_status(self) -> str:

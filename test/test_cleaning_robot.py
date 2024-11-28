@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch, call
 from mock import GPIO
 from mock.ibs import IBS
 from src.cleaning_robot import CleaningRobot
-
+from src.cleaning_robot import CleaningRobotError
 
 class TestCleaningRobot(TestCase):
 
@@ -25,3 +25,8 @@ class TestCleaningRobot(TestCase):
         cr.initialize_robot()
         self.assertEqual(cr.robot_status(),"(0,0,N)")
 
+    def test_initialize_robot_error(self):
+        cr = CleaningRobot()
+        with patch.object(cr, "robot_status", return_value="(1,0,N)"):
+            with self.assertRaises(CleaningRobotError):
+                cr.initialize_robot()
