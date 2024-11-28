@@ -69,6 +69,7 @@ class CleaningRobot:
         self.pos_y = 0
         self.heading = self.N
 
+
     def robot_status(self) -> str:
         return f"({self.pos_x},{self.pos_y},{self.heading})"
 
