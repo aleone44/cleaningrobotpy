@@ -19,3 +19,9 @@ class TestCleaningRobot(TestCase):
         self.assertEqual(cr.pos_x, 0)
         self.assertEqual(cr.pos_y, 0)
         self.assertEqual(cr.heading, CleaningRobot.N)
+
+    def test_robot_status(self):
+        cr= CleaningRobot()
+        cr.initialize_robot()
+        self.assertEqual(cr.robot_status(),"(0,0,N)")
+
