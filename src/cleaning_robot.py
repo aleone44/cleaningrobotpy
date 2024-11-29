@@ -58,9 +58,9 @@ class CleaningRobot:
         ic2 = board.I2C()
         self.ibs = IBS.IBS(ic2)
 
-        self.pos_x = None
-        self.pos_y = None
-        self.heading = None
+        self.pos_x = 0
+        self.pos_y = 0
+        self.heading = "N"
 
         self.recharge_led_on = False
         self.cleaning_system_on = False
@@ -98,8 +98,8 @@ class CleaningRobot:
 
         if command == self.FORWARD:
             if self.obstacle_found():
-                print(self.robot_status())
-                return self.robot_status()
+                self.pos_y = int(self.pos_y)
+                return f"({self.pos_x},{self.pos_y},{self.heading})({self.pos_x},{self.pos_y + 1})"
             else:
                 self.activate_wheel_motor()
                 dx, dy = directions[self.heading]

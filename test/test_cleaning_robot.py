@@ -145,7 +145,7 @@ class TestCleaningRobot(TestCase):
         cr = CleaningRobot()
         mock_obstacle.return_value = True
         self.assertTrue(cr.obstacle_found())
-
+        self.assertEqual(cr.execute_command("f"), "(0,0,N)(0,1)")
 
 
 
