@@ -72,3 +72,38 @@ class TestCleaningRobot(TestCase):
         with self.assertRaises(CleaningRobotError) as context:
             cr.manage_cleaning_system()
         self.assertEqual(str(context.exception), "charge value must be between 0 and 100")
+
+    def test_execute_command_forward(self):
+        cr = CleaningRobot()
+        cr.initialize_robot()
+        with patch.object(cr, "activate_wheel_motor") as mock_wheel_motor:
+            new_state = cr.execute_command("f")
+            mock_wheel_motor.assert_called_once()
+            self.assertEqual(new_state, "(0,1,N)")
+            self.assertEqual(cr.robot_status(), "(0,1,N)")
+
+    def test_execute_command_turn_right(self):
+        cr = CleaningRobot()
+        cr.initialize_robot()
+        with patch.object(cr, "activate_rotation_motor") as mock_rotation_motor:
+            new_state = cr.execute_command("r")
+            mock_rotation_motor.assert_called_once_with("r")
+            self.assertEqual(new_state, "(0,0,E)")
+            self.assertEqual(cr.robot_status(), "(0,0,E)")
+
+    def test_execute_command_turn_left(self):
+        cr = CleaningRobot()
+        cr.initialize_robot()
+        with patch.object(cr, "activate_rotation_motor") as mock_rotation_motor:
+            new_state = cr.execute_command("l")
+            mock_rotation_motor.assert_called_once_with("l")
+            self.assertEqual(new_state, "(0,0,W)")
+            self.assertEqual(cr.robot_status(), "(0,0,W)")
+
+    def test_execute_command_error(self):
+        cr = CleaningRobot()
+        cr.initialize_robot()
+        with self.assertRaises(ValueError) as context:
+            cr.execute_command("b")  # Invalid command
+        self.assertEqual(str(context.exception), "Invalid command: b")
+        self.assertEqual(cr.robot_status(), "(0,0,N)")
