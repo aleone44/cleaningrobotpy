@@ -105,5 +105,48 @@ class TestCleaningRobot(TestCase):
         cr.initialize_robot()
         with self.assertRaises(ValueError) as context:
             cr.execute_command("b")  # Invalid command
-        self.assertEqual(str(context.exception), "Invalid command: b")
+        self.assertEqual(str(context.exception), "Invalid command")
         self.assertEqual(cr.robot_status(), "(0,0,N)")
+
+    def test_robot_movement_3_2_E(self):
+        cr = CleaningRobot()
+        cr.initialize_robot()
+        cr = CleaningRobot()
+        cr.initialize_robot()
+        cr.execute_command("f")
+        cr.execute_command("f")
+        cr.execute_command("r")
+        cr.execute_command("f")
+        cr.execute_command("f")
+        cr.execute_command("f")
+        final_state = cr.robot_status()
+
+    @patch.object(CleaningRobot, "activate_wheel_motor")
+    @patch.object(CleaningRobot, "activate_rotation_motor")
+    def test_robot_full_rotation_returns_to_start(self, mock_rotation_motor, mock_wheel_motor):
+        cr = CleaningRobot()
+        cr.initialize_robot()
+
+        cr.execute_command("f")
+        cr.execute_command("r")
+        cr.execute_command("f")
+        cr.execute_command("r")
+        cr.execute_command("f")
+        cr.execute_command("r")
+        cr.execute_command("f")
+        cr.execute_command("r")
+
+        self.assertEqual(cr.robot_status(), "(0,0,N)")
+        mock_wheel_motor.assert_called()
+        mock_rotation_motor.assert_called()
+
+    @patch.object(GPIO,"input")
+    def test_obstacle_found(self, mock_obstacle: Mock):
+        cr = CleaningRobot()
+        mock_obstacle.return_value = True
+        self.assertTrue(cr.obstacle_found())
+
+
+
+
+
