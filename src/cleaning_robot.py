@@ -95,11 +95,13 @@ class CleaningRobot:
             self.S: self.W,
             self.W: self.N
         }
-
+        if self.check_battery() <= 10:
+            return "!" + self.robot_status()
         if command == self.FORWARD:
             if self.obstacle_found():
                 self.pos_y = int(self.pos_y)
                 return f"({self.pos_x},{self.pos_y},{self.heading})({self.pos_x},{self.pos_y + 1})"
+
             else:
                 self.activate_wheel_motor()
                 dx, dy = directions[self.heading]
@@ -123,7 +125,7 @@ class CleaningRobot:
         return GPIO.input(self.INFRARED_PIN)
 
     def manage_cleaning_system(self) -> None:
-        charge_left = self.ibs.get_charge_left()
+        charge_left = self.check_battery()
         if charge_left < 0 or charge_left > 100:
             raise CleaningRobotError("charge value must be between 0 and 100")
         if charge_left > 10:
@@ -182,6 +184,11 @@ class CleaningRobot:
         GPIO.output(self.PWMB, GPIO.LOW)
         GPIO.output(self.STBY, GPIO.LOW)
 
+    def check_battery(self) -> int:
+        charge_left = self.ibs.get_charge_left()
+        if charge_left is None:
+            return 0
+        return charge_left
 
 class CleaningRobotError(Exception):
     pass

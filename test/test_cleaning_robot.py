@@ -73,34 +73,42 @@ class TestCleaningRobot(TestCase):
             cr.manage_cleaning_system()
         self.assertEqual(str(context.exception), "charge value must be between 0 and 100")
 
-    def test_execute_command_forward(self):
+    @patch.object(CleaningRobot, "activate_wheel_motor")
+    @patch.object(CleaningRobot, "check_battery", return_value=11)
+    @patch.object(CleaningRobot, "obstacle_found", return_value=False)
+    def test_execute_command_forward(self, mock_obstacle_found, mock_check_battery, mock_wheel_motor):
         cr = CleaningRobot()
         cr.initialize_robot()
-        with patch.object(cr, "activate_wheel_motor") as mock_wheel_motor:
-            new_state = cr.execute_command("f")
-            mock_wheel_motor.assert_called_once()
-            self.assertEqual(new_state, "(0,1,N)")
-            self.assertEqual(cr.robot_status(), "(0,1,N)")
+        new_state = cr.execute_command("f")
+        mock_wheel_motor.assert_called_once()
+        self.assertEqual(new_state, "(0,1,N)")
+        self.assertEqual(cr.robot_status(), "(0,1,N)")
 
-    def test_execute_command_turn_right(self):
+    @patch.object(CleaningRobot, "activate_rotation_motor")
+    @patch.object(CleaningRobot, "check_battery", return_value=99)
+    @patch.object(CleaningRobot, "obstacle_found", return_value=False)
+    def test_execute_command_turn_right(self, mock_obstacle_found, mock_check_battery, mock_rotation_motor):
         cr = CleaningRobot()
         cr.initialize_robot()
-        with patch.object(cr, "activate_rotation_motor") as mock_rotation_motor:
-            new_state = cr.execute_command("r")
-            mock_rotation_motor.assert_called_once_with("r")
-            self.assertEqual(new_state, "(0,0,E)")
-            self.assertEqual(cr.robot_status(), "(0,0,E)")
+        new_state = cr.execute_command("r")
+        mock_rotation_motor.assert_called_once_with("r")
+        self.assertEqual(new_state, "(0,0,E)")
+        self.assertEqual(cr.robot_status(), "(0,0,E)")
 
-    def test_execute_command_turn_left(self):
+    @patch.object(CleaningRobot, "activate_rotation_motor")
+    @patch.object(CleaningRobot, "check_battery", return_value=99)
+    @patch.object(CleaningRobot, "obstacle_found", return_value=False)
+    def test_execute_command_turn_left(self, mock_obstacle_found, mock_check_battery, mock_rotation_motor):
         cr = CleaningRobot()
         cr.initialize_robot()
-        with patch.object(cr, "activate_rotation_motor") as mock_rotation_motor:
-            new_state = cr.execute_command("l")
-            mock_rotation_motor.assert_called_once_with("l")
-            self.assertEqual(new_state, "(0,0,W)")
-            self.assertEqual(cr.robot_status(), "(0,0,W)")
+        new_state = cr.execute_command("l")
+        mock_rotation_motor.assert_called_once_with("l")
+        self.assertEqual(new_state, "(0,0,W)")
+        self.assertEqual(cr.robot_status(), "(0,0,W)")
 
-    def test_execute_command_error(self):
+    @patch.object(CleaningRobot, "check_battery", return_value=98)
+    @patch.object(CleaningRobot, "obstacle_found", return_value=False)
+    def test_execute_command_error(self, mock_obstacle_found, mock_check_battery):
         cr = CleaningRobot()
         cr.initialize_robot()
         with self.assertRaises(ValueError) as context:
@@ -108,9 +116,11 @@ class TestCleaningRobot(TestCase):
         self.assertEqual(str(context.exception), "Invalid command")
         self.assertEqual(cr.robot_status(), "(0,0,N)")
 
-    def test_robot_movement_3_2_E(self):
-        cr = CleaningRobot()
-        cr.initialize_robot()
+    @patch.object(CleaningRobot, "activate_rotation_motor")
+    @patch.object(CleaningRobot, "activate_wheel_motor")
+    @patch.object(CleaningRobot, "check_battery", return_value=98)
+    @patch.object(CleaningRobot, "obstacle_found", return_value=False)
+    def test_robot_movement_3_2_E(self,mock_obstacle_found, mock_check_battery, mock_wheel_motor,mock_rotation_motor):
         cr = CleaningRobot()
         cr.initialize_robot()
         cr.execute_command("f")
@@ -120,10 +130,13 @@ class TestCleaningRobot(TestCase):
         cr.execute_command("f")
         cr.execute_command("f")
         final_state = cr.robot_status()
+        self.assertEqual(final_state, "(3,2,E)")
 
-    @patch.object(CleaningRobot, "activate_wheel_motor")
     @patch.object(CleaningRobot, "activate_rotation_motor")
-    def test_robot_full_rotation_returns_to_start(self, mock_rotation_motor, mock_wheel_motor):
+    @patch.object(CleaningRobot, "activate_wheel_motor")
+    @patch.object(CleaningRobot, "check_battery", return_value=97)
+    @patch.object(CleaningRobot, "obstacle_found", return_value=False)
+    def test_robot_full_rotation_returns_to_start(self,mock_obstacle_found, mock_check_battery, mock_wheel_motor,mock_rotation_motor):
         cr = CleaningRobot()
         cr.initialize_robot()
 
@@ -140,12 +153,24 @@ class TestCleaningRobot(TestCase):
         mock_wheel_motor.assert_called()
         mock_rotation_motor.assert_called()
 
+    @patch.object(CleaningRobot, "check_battery", return_value=11)
     @patch.object(GPIO,"input")
-    def test_obstacle_found(self, mock_obstacle: Mock):
+    def test_obstacle_found(self, mock_obstacle: Mock, mock_check_battery):
         cr = CleaningRobot()
         mock_obstacle.return_value = True
         self.assertTrue(cr.obstacle_found())
         self.assertEqual(cr.execute_command("f"), "(0,0,N)(0,1)")
+
+    @patch.object(CleaningRobot, "check_battery", return_value=10)
+    def test_battery_low_robot_dont_move(self, mock_check_battery):
+        cr = CleaningRobot()
+        cr.initialize_robot()
+
+        status = cr.robot_status()
+        result = cr.execute_command("f")
+
+        self.assertEqual(result, "!" + status)
+        self.assertEqual(cr.robot_status(), status)
 
 
 
