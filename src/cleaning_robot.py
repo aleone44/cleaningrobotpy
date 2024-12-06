@@ -39,6 +39,24 @@ class CleaningRobot:
     RIGHT = 'r'
     FORWARD = 'f'
 
+    DIRECTIONS = {
+        "N": (0, 1),
+        "S": (0, -1),
+        "E": (1, 0),
+        "W": (-1, 0)
+    }
+    ROTATIONS_LEFT = {
+        "N": "W",
+        "W": "S",
+        "S": "E",
+        "E": "N"
+    }
+    ROTATIONS_RIGHT = {
+        "N": "E",
+        "E": "S",
+        "S": "W",
+        "W": "N"
+    }
 
     def __init__(self):
         GPIO.setmode(GPIO.BOARD)
@@ -65,6 +83,8 @@ class CleaningRobot:
         self.recharge_led_on = False
         self.cleaning_system_on = False
 
+
+
     def initialize_robot(self) -> None:
         self.pos_x = 0
         self.pos_y = 0
@@ -77,26 +97,10 @@ class CleaningRobot:
         return f"({self.pos_x},{self.pos_y},{self.heading})"
 
     def execute_command(self, command: str) -> str:
-        directions = {
-            self.N: (0, 1),
-            self.S: (0, -1),
-            self.E: (1, 0),
-            self.W: (-1, 0)
-        }
-        rotations_left = {
-            self.N: self.W,
-            self.W: self.S,
-            self.S: self.E,
-            self.E: self.N
-        }
-        rotations_right = {
-            self.N: self.E,
-            self.E: self.S,
-            self.S: self.W,
-            self.W: self.N
-        }
-        if self.check_battery() <= 10:
+        self.manage_cleaning_system()
+        if self.recharge_led_on:
             return "!" + self.robot_status()
+
         if command == self.FORWARD:
             if self.obstacle_found():
                 self.pos_y = int(self.pos_y)
@@ -104,21 +108,20 @@ class CleaningRobot:
 
             else:
                 self.activate_wheel_motor()
-                dx, dy = directions[self.heading]
+                dx, dy = self.DIRECTIONS[self.heading]
                 self.pos_x += dx
                 self.pos_y += dy
 
         elif command == self.LEFT:
             self.activate_rotation_motor(self.LEFT)
-            self.heading = rotations_left[self.heading]
+            self.heading = self.ROTATIONS_LEFT[self.heading]
 
         elif command == self.RIGHT:
             self.activate_rotation_motor(self.RIGHT)
-            self.heading = rotations_right[self.heading]
+            self.heading = self.ROTATIONS_RIGHT[self.heading]
 
         else:
             raise ValueError("Invalid command")
-
         return self.robot_status()
 
     def obstacle_found(self) -> bool:
@@ -129,8 +132,8 @@ class CleaningRobot:
         if charge_left < 0 or charge_left > 100:
             raise CleaningRobotError("charge value must be between 0 and 100")
         if charge_left > 10:
-            GPIO.output(self.CLEANING_SYSTEM_PIN, True)
             GPIO.output(self.RECHARGE_LED_PIN, False)
+            GPIO.output(self.CLEANING_SYSTEM_PIN, True)
             self.cleaning_system_on = True
             self.recharge_led_on = False
         else:
@@ -189,6 +192,8 @@ class CleaningRobot:
         if charge_left is None:
             return 0
         return charge_left
+
+
 
 class CleaningRobotError(Exception):
     pass
