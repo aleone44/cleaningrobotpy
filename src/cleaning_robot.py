@@ -82,13 +82,16 @@ class CleaningRobot:
 
         self.recharge_led_on = False
         self.cleaning_system_on = False
-
+        self.cleaned_positions = set()
+        self.room_length = 3
+        self.room_width = 3
 
 
     def initialize_robot(self) -> None:
         self.pos_x = 0
         self.pos_y = 0
         self.heading = self.N
+        self.cleaned_positions = {(0, 0)}
         if self.robot_status() != "(0,0,N)":
             raise CleaningRobotError("error in initialize robot")
 
@@ -102,15 +105,7 @@ class CleaningRobot:
             return "!" + self.robot_status()
 
         if command == self.FORWARD:
-            if self.obstacle_found():
-                self.pos_y = int(self.pos_y)
-                return f"({self.pos_x},{self.pos_y},{self.heading})({self.pos_x},{self.pos_y + 1})"
-
-            else:
-                self.activate_wheel_motor()
-                dx, dy = self.DIRECTIONS[self.heading]
-                self.pos_x += dx
-                self.pos_y += dy
+            return self.move_forward(command)
 
         elif command == self.LEFT:
             self.activate_rotation_motor(self.LEFT)
@@ -122,7 +117,20 @@ class CleaningRobot:
 
         else:
             raise ValueError("Invalid command")
+        self.cleaning_map()
         return self.robot_status()
+
+    def move_forward(self,commabd:str) -> str:
+        if self.obstacle_found():
+            self.pos_y = int(self.pos_y)
+            return f"({self.pos_x},{self.pos_y},{self.heading})({self.pos_x},{self.pos_y + 1})"
+
+        else:
+            self.activate_wheel_motor()
+            dx, dy = self.DIRECTIONS[self.heading]
+            self.pos_x += dx
+            self.pos_y += dy
+            return self.robot_status()
 
     def obstacle_found(self) -> bool:
         return GPIO.input(self.INFRARED_PIN)
@@ -192,6 +200,13 @@ class CleaningRobot:
         if charge_left is None:
             return 0
         return charge_left
+
+    def cleaning_map(self) -> float:
+        self.cleaned_positions.add((self.pos_x, self.pos_y))
+        total_positions = self.room_length * self.room_width
+        if total_positions == 0:
+            raise CleaningRobotError()
+        return (len(self.cleaned_positions) / total_positions) * 100
 
 
 

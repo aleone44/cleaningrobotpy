@@ -29,8 +29,7 @@ class TestCleaningRobot(TestCase):
         self.assertEqual(self.cr.heading, CleaningRobot.N)
 
     def test_robot_status(self):
-        cr= CleaningRobot()
-        cr.initialize_robot()
+        self.cr.initialize_robot()
         self.assertEqual(self.cr.robot_status(),"(0,0,N)")
 
     @patch("src.cleaning_robot.CleaningRobot.robot_status")
@@ -221,6 +220,65 @@ class TestCleaningRobot(TestCase):
         self.cr.execute_command("f")
         self.assertEqual(self.cr.robot_status(), status)
 
+    @patch.object(CleaningRobot, "obstacle_found", return_value=False)
+    @patch.object(CleaningRobot, "check_battery", return_value=97)
+    @patch.object(CleaningRobot, "activate_wheel_motor")
+    @patch.object(CleaningRobot, "activate_rotation_motor")
+    def test_cleaning_map(self, mock_rotation_motor, mock_wheel_motor, mock_check_battery, mock_obstacle_found):
+        self.cr.room_length = 3
+        self.cr.room_width = 3
+        self.cr.cleaned_positions = set()
+        self.cr.initialize_robot()
 
+        commands = ["f", "f"]
+        for cmd in commands:
+            self.cr.execute_command(cmd)
+            dx, dy = self.cr.DIRECTIONS[self.cr.heading]
+            self.cr.cleaned_positions.add((self.cr.pos_x, self.cr.pos_y))
+
+        expected_positions = {(0, 0), (0, 1), (0, 2)}
+        self.assertEqual(self.cr.cleaned_positions, expected_positions)
+
+
+    @patch.object(CleaningRobot, "obstacle_found", return_value=False)
+    @patch.object(CleaningRobot, "check_battery", return_value=97)
+    @patch.object(CleaningRobot, "activate_wheel_motor")
+    @patch.object(CleaningRobot, "activate_rotation_motor")
+    def test_cleaning_map_with_change_direction(self, mock_rotation_motor, mock_wheel_motor, mock_check_battery, mock_obstacle_found):
+        self.cr.room_length = 3
+        self.cr.room_width = 3
+        self.cr.cleaned_positions = set()
+        self.cr.initialize_robot()
+
+        commands = ["r","f","l","f"]
+        for cmd in commands:
+            self.cr.execute_command(cmd)
+            self.cr.cleaned_positions.add((self.cr.pos_x, self.cr.pos_y))
+
+        expected_positions = {(0, 0), (1, 0), (1, 1)}
+        self.assertEqual(self.cr.cleaned_positions, expected_positions)
+
+    @patch.object(CleaningRobot, "obstacle_found", return_value=False)
+    @patch.object(CleaningRobot, "check_battery", return_value=97)
+    @patch.object(CleaningRobot, "activate_wheel_motor")
+    @patch.object(CleaningRobot, "activate_rotation_motor")
+    def test_cleaning_map_percentage(self, mock_rotation_motor, mock_wheel_motor, mock_check_battery,mock_obstacle_found):
+        self.cr.room_length = 3
+        self.cr.room_width = 3
+        self.cr.cleaned_positions = set()
+        self.cr.initialize_robot()
+        total_positions = self.cr.room_length * self.cr.room_width
+
+        commands = ["r", "f", "l", "f"]
+        for cmd in commands:
+            self.cr.execute_command(cmd)
+            self.cr.cleaned_positions.add((self.cr.pos_x, self.cr.pos_y))
+
+        expected_positions = {(0, 0), (1, 0), (1, 1)}
+
+        expected_cleaned= (len(expected_positions) / total_positions) * 100
+        self.assertAlmostEqual((len(self.cr.cleaned_positions) / total_positions) * 100,
+                               expected_cleaned,places=2)
+        print(expected_cleaned)
 
     
