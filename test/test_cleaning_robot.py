@@ -292,24 +292,29 @@ class TestCleaningRobot(TestCase):
         self.cr.initialize_robot()
         self.assertEqual(self.cr.check_water_status(), 10)
 
-    @patch.object(IBS,'get_water_level', return_value= 101)
-    def test_check_water_level_error(self, mock_check_water_status):
+
+    def test_check_water_level_error(self):
         self.cr.initialize_robot()
+        self.cr.water_level = 101
         with self.assertRaises(CleaningRobotError):
             self.cr.check_water_status()
 
-    @patch.object(CleaningRobot, "check_dirty_water")
-    def test_check_dirty_water(self, mock_gpio_input):
-        mock_gpio_input.return_value = 5
-        self.assertEqual(self.cr.check_dirty_water(),5)
+    def test_check_dirty_water(self):
+        self.cr.dirty_sensor = 3
+        self.assertEqual(self.cr.check_dirty_water(), 3)
 
-    @patch.object(CleaningRobot, "check_dirty_water")
-    def test_check_dirty_water_error(self, mock_gpio_input):
-        mock_gpio_input.return_value = 6
+
+    def test_check_dirty_water_error(self):
+        self.cr.dirty_sensor = 6
         with self.assertRaises(CleaningRobotError):
             self.cr.check_dirty_water()
 
-
+    def test_return_to_start(self):
+        self.cr.cleaned_positions = {(0, 0), (0, 1), (0, 2)}
+        self.cr.pos_x = 0
+        self.cr.pos_y = 2
+        self.cr.return_to_start()
+        self.assertEqual(self.cr.robot_status(), "(0,0,N)")
 
 
 

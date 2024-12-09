@@ -68,6 +68,7 @@ class CleaningRobot:
         GPIO.setup(self.RECHARGE_LED_PIN, GPIO.OUT)
         GPIO.setup(self.CLEANING_SYSTEM_PIN, GPIO.OUT)
         GPIO.setup(self.WATER_LEVEL_PIN, GPIO.IN)
+        GPIO.setup(self.WATER_DIRTY_PIN, GPIO.IN)
 
         GPIO.setup(self.PWMA, GPIO.OUT)
         GPIO.setup(self.AIN2, GPIO.OUT)
@@ -76,7 +77,7 @@ class CleaningRobot:
         GPIO.setup(self.BIN2, GPIO.OUT)
         GPIO.setup(self.BIN1, GPIO.OUT)
         GPIO.setup(self.STBY, GPIO.OUT)
-        GPIO.setup(self.WATER_DIRTY_PIN, GPIO.IN)
+
 
         ic2 = board.I2C()
         self.ibs = IBS.IBS(ic2)
@@ -87,9 +88,10 @@ class CleaningRobot:
 
         self.recharge_led_on = False
         self.cleaning_system_on = False
-        self.cleaned_positions = set()
+        self.cleaned_positions = list()
         self.room_length = 3
         self.room_width = 3
+        self.water_level = 0
         self.dirty_sensor = 0
 
 
@@ -215,16 +217,27 @@ class CleaningRobot:
         return (len(self.cleaned_positions) / total_positions) * 100
 
     def check_water_status(self) -> int:
-        water_level= self.ibs.get_water_level()
-        if water_level < 0 or water_level > 100:
+        if self.water_level < 0 or self.water_level > 100:
             raise CleaningRobotError()
-        return water_level
+        return self.water_level
 
     def check_dirty_water(self) -> int:
+        if self.check_water_status() < 10:
+            self.return_to_start()
         if self.dirty_sensor < 0 or self.dirty_sensor > 5:
             raise CleaningRobotError()
+        elif self.dirty_sensor == 5:
+            self.return_to_start()
         return self.dirty_sensor
 
+    def return_to_start(self):
+        reverse_path = sorted(self.cleaned_positions, reverse=True)
+        for x, y in reverse_path:
+            self.pos_x, self.pos_y = x, y
+
+        self.pos_x=0
+        self.pos_y = 0
+        self.heading = self.N
 
 
 class CleaningRobotError(Exception):
