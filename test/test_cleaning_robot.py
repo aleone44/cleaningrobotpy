@@ -298,11 +298,18 @@ class TestCleaningRobot(TestCase):
         with self.assertRaises(CleaningRobotError):
             self.cr.check_water_status()
 
-    @patch.object(IBS,'get_dirty_level')
+    @patch.object(CleaningRobot, "check_dirty_water")
     def test_check_dirty_water(self, mock_gpio_input):
-        mock_gpio_input.return_value = True
-        robot = CleaningRobot()
-        self.assertTrue(robot.check_dirty_water())
+        mock_gpio_input.return_value = 5
+        self.assertEqual(self.cr.check_dirty_water(),5)
+
+    @patch.object(CleaningRobot, "check_dirty_water")
+    def test_check_dirty_water_error(self, mock_gpio_input):
+        mock_gpio_input.return_value = 6
+        with self.assertRaises(CleaningRobotError):
+            self.cr.check_dirty_water()
+
+
 
 
 

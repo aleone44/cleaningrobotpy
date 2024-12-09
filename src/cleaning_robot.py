@@ -76,6 +76,7 @@ class CleaningRobot:
         GPIO.setup(self.BIN2, GPIO.OUT)
         GPIO.setup(self.BIN1, GPIO.OUT)
         GPIO.setup(self.STBY, GPIO.OUT)
+        GPIO.setup(self.WATER_DIRTY_PIN, GPIO.IN)
 
         ic2 = board.I2C()
         self.ibs = IBS.IBS(ic2)
@@ -89,7 +90,7 @@ class CleaningRobot:
         self.cleaned_positions = set()
         self.room_length = 3
         self.room_width = 3
-        self.dirty_sensor= False
+        self.dirty_sensor = 0
 
 
     def initialize_robot(self) -> None:
@@ -219,8 +220,10 @@ class CleaningRobot:
             raise CleaningRobotError()
         return water_level
 
-    def check_dirty_water(self) -> bool:
-        return GPIO.input(self.WATER_DIRTY_PIN)
+    def check_dirty_water(self) -> int:
+        if self.dirty_sensor < 0 or self.dirty_sensor > 5:
+            raise CleaningRobotError()
+        return self.dirty_sensor
 
 
 
