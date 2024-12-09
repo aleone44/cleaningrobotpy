@@ -192,6 +192,7 @@ class CleaningRobot:
             GPIO.output(self.BIN2, GPIO.HIGH)
 
         GPIO.output(self.PWMB, GPIO.HIGH)
+
         GPIO.output(self.STBY, GPIO.HIGH)
 
         if DEPLOYMENT:  # Sleep only if you are deploying on the actual hardware

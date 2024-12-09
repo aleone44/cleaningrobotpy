@@ -15,6 +15,7 @@ class IBS:
     def get_water_level(self) -> int:
         pass
 
+
     def get_dirty_level(self) -> int:
         pass
 

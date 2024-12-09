@@ -309,6 +309,7 @@ class TestCleaningRobot(TestCase):
         with self.assertRaises(CleaningRobotError):
             self.cr.check_dirty_water()
 
+
     def test_return_to_start(self):
         self.cr.cleaned_positions = {(0, 0), (0, 1), (0, 2)}
         self.cr.pos_x = 0
