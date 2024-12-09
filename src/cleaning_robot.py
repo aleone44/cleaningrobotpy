@@ -18,6 +18,9 @@ class CleaningRobot:
     RECHARGE_LED_PIN = 12
     CLEANING_SYSTEM_PIN = 13
     INFRARED_PIN = 15
+    WATER_LEVEL_PIN = 14 #pin to measure water level
+    WATER_DIRTY_PIN = 15 #pin to measure dirty water
+
 
     # Wheel motor pins
     PWMA = 16
@@ -64,6 +67,7 @@ class CleaningRobot:
         GPIO.setup(self.INFRARED_PIN, GPIO.IN)
         GPIO.setup(self.RECHARGE_LED_PIN, GPIO.OUT)
         GPIO.setup(self.CLEANING_SYSTEM_PIN, GPIO.OUT)
+        GPIO.setup(self.WATER_LEVEL_PIN, GPIO.IN)
 
         GPIO.setup(self.PWMA, GPIO.OUT)
         GPIO.setup(self.AIN2, GPIO.OUT)
@@ -85,6 +89,7 @@ class CleaningRobot:
         self.cleaned_positions = set()
         self.room_length = 3
         self.room_width = 3
+        self.dirty_sensor= False
 
 
     def initialize_robot(self) -> None:
@@ -207,6 +212,15 @@ class CleaningRobot:
         if total_positions == 0:
             raise CleaningRobotError()
         return (len(self.cleaned_positions) / total_positions) * 100
+
+    def check_water_status(self) -> int:
+        water_level= self.ibs.get_water_level()
+        if water_level < 0 or water_level > 100:
+            raise CleaningRobotError()
+        return water_level
+
+    def check_dirty_water(self) -> bool:
+        return GPIO.input(self.WATER_DIRTY_PIN)
 
 
 

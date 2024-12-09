@@ -11,3 +11,11 @@ class IBS:
         :return: the charge left (i.e., a percentage value from 0 to 100)
         """
         pass
+
+    def get_water_level(self) -> int:
+        pass
+
+    def get_dirty_level(self) -> int:
+        pass
+
+

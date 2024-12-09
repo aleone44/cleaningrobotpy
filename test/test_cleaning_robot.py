@@ -275,10 +275,34 @@ class TestCleaningRobot(TestCase):
             self.cr.cleaned_positions.add((self.cr.pos_x, self.cr.pos_y))
 
         expected_positions = {(0, 0), (1, 0), (1, 1)}
-
         expected_cleaned= (len(expected_positions) / total_positions) * 100
         self.assertAlmostEqual((len(self.cr.cleaned_positions) / total_positions) * 100,
                                expected_cleaned,places=2)
-        print(expected_cleaned)
 
-    
+
+    def test_cleaning_map_percentage_error(self):
+        self.cr.initialize_robot()
+        self.cr.room_length = 0
+        self.cr.room_width = 0
+        with self.assertRaises(CleaningRobotError) :
+            self.cr.cleaning_map()
+
+    @patch.object(CleaningRobot, "check_water_status", return_value=10)
+    def test_check_water_level(self, mock_check_water_status):
+        self.cr.initialize_robot()
+        self.assertEqual(self.cr.check_water_status(), 10)
+
+    @patch.object(IBS,'get_water_level', return_value= 101)
+    def test_check_water_level_error(self, mock_check_water_status):
+        self.cr.initialize_robot()
+        with self.assertRaises(CleaningRobotError):
+            self.cr.check_water_status()
+
+    @patch.object(IBS,'get_dirty_level')
+    def test_check_dirty_water(self, mock_gpio_input):
+        mock_gpio_input.return_value = True
+        robot = CleaningRobot()
+        self.assertTrue(robot.check_dirty_water())
+
+
+
