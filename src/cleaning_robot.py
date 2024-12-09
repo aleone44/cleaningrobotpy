@@ -240,5 +240,6 @@ class CleaningRobot:
         self.heading = self.N
 
 
+
 class CleaningRobotError(Exception):
     pass
