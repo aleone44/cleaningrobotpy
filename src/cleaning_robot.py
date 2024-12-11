@@ -124,6 +124,7 @@ class CleaningRobot:
             self.activate_rotation_motor(self.RIGHT)
             self.heading = self.ROTATIONS_RIGHT[self.heading]
 
+
         else:
             raise ValueError("Invalid command")
         self.cleaning_map()
