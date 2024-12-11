@@ -11,6 +11,7 @@ class TestCleaningRobot(TestCase):
     def setUp(self):
         self.cr=CleaningRobot()
 
+
     @patch.object(GPIO, "input")
     def test_something(self, mock_object: Mock):
         # This is an example of test where I want to mock the GPIO.input() function
@@ -44,6 +45,7 @@ class TestCleaningRobot(TestCase):
         mock_get_charge_left.return_value = 11
         self.cr.manage_cleaning_system()
         self.assertFalse(self.cr.recharge_led_on)
+
 
     @patch.object(IBS, "get_charge_left")
     def test_execute_command_enough_battery_cleaning_system_on(self, mock_get_charge_left):
@@ -224,7 +226,8 @@ class TestCleaningRobot(TestCase):
     @patch.object(CleaningRobot, "check_battery", return_value=97)
     @patch.object(CleaningRobot, "activate_wheel_motor")
     @patch.object(CleaningRobot, "activate_rotation_motor")
-    def test_cleaning_map(self, mock_rotation_motor, mock_wheel_motor, mock_check_battery, mock_obstacle_found):
+    def test_cleaning_map(self, mock_rotation_motor, mock_wheel_motor, mock_check_battery,
+                                                                    mock_obstacle_found):
         self.cr.room_length = 3
         self.cr.room_width = 3
         self.cr.cleaned_positions = set()
@@ -316,6 +319,8 @@ class TestCleaningRobot(TestCase):
         self.cr.pos_y = 2
         self.cr.return_to_start()
         self.assertEqual(self.cr.robot_status(), "(0,0,N)")
+
+
 
 
 

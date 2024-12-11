@@ -113,6 +113,7 @@ class CleaningRobot:
             return "!" + self.robot_status()
 
         if command == self.FORWARD:
+            self.cleaning_map()
             return self.move_forward(command)
 
         elif command == self.LEFT:
@@ -216,6 +217,7 @@ class CleaningRobot:
         if total_positions == 0:
             raise CleaningRobotError()
         return (len(self.cleaned_positions) / total_positions) * 100
+
 
     def check_water_status(self) -> int:
         if self.water_level < 0 or self.water_level > 100:
